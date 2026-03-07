@@ -509,4 +509,15 @@ function initAnimations() {
 
 // Header scroll
 window.addEventListener('scroll', () => {
-  document.querySe
+  const header = document.querySelector('header');
+  if (header) {
+    header.classList.toggle('scrolled', window.scrollY > 50);
+  }
+});
+
+// Init
+document.addEventListener('DOMContentLoaded', () => {
+  loadAdmin();
+  renderGallery();
+  initAnimations();
+});
