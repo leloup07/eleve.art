@@ -34,6 +34,11 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .hero h1{font-family:'Cormorant Garamond',serif;font-size:clamp(36px,5vw,60px);font-weight:300;letter-spacing:6px;text-transform:uppercase;color:var(--ink);margin-bottom:16px;}
 .hero p{font-size:14px;letter-spacing:3px;text-transform:uppercase;color:var(--ash);font-weight:300;}
 .hero .count{font-family:'Cormorant Garamond',serif;font-size:48px;color:var(--gold);font-weight:300;margin-bottom:8px;}
+.search-bar{max-width:520px;margin:0 auto;padding:24px 48px 48px;position:relative;}
+.search-bar input{width:100%;padding:14px 20px 14px 48px;border:1px solid var(--linen);background:var(--ivory);font-family:'Jost',sans-serif;font-size:15px;color:var(--ink);letter-spacing:1px;outline:none;transition:border .3s;}
+.search-bar input::placeholder{color:var(--ash);letter-spacing:2px;font-size:13px;text-transform:uppercase;}
+.search-bar input:focus{border-color:var(--gold);}
+.search-bar svg{position:absolute;left:68px;top:50%;transform:translateY(-50%);width:18px;height:18px;stroke:var(--ash);pointer-events:none;}
 
 /* SECTIONS */
 .section{padding:80px 48px;position:relative;}
@@ -140,6 +145,8 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 @media(max-width:900px){
   .header{padding:0 24px;}
   .nav{gap:16px;}
+  .search-bar{padding:16px 24px 32px;}
+  .search-bar svg{left:44px;}
   .section{padding:60px 24px;}
   .lb-content{flex-direction:column;gap:24px;}
   .lb-details{flex:none;width:100%;}
@@ -172,9 +179,14 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 
 <!-- HERO -->
 <div class="hero">
-  <div class="count" style="animation:fadeUp .8s ease .2s both;">29</div>
   <h1 style="animation:fadeUp .8s ease .4s both;">Colección Eleve</h1>
   <p style="animation:fadeUp .8s ease .6s both;">Galería privada · Catálogo completo</p>
+</div>
+
+<!-- SEARCH -->
+<div class="search-bar">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+  <input type="text" id="searchInput" placeholder="Buscar por artista, título, técnica…" oninput="filterGallery(this.value)">
 </div>
 
 <!-- MAIN CONTENT -->
@@ -249,7 +261,7 @@ const IMG = {
 };
 
 const COLLECTION = [
-{"id": "picasso", "title": "Femme se coiffant devant la glace", "artist": "Pablo Picasso", "year": "1933", "medium": "Aguafuerte sobre papel verjurado", "dimensions": "Plancha: 31,7 × 24,7 cm · Hoja: 44,5 × 34,5 cm", "style": "Suite Vollard", "edition": "Edición de 260 ejemplares", "description": "Perteneciente a la Suite Vollard, plancha G.208, catalogada por Georges Bloch (Tomo I, nº 141). Grabado ejecutado el 10 de abril de 1933, firmado a lápiz. Impresa por Lacourière y editada por Ambroise Vollard, París. La Suite Vollard es uno de los conjuntos gráficos más importantes del siglo XX.", "section": "iconic", "img_key": "Picasso"},
+{"id": "picasso", "title": "Femme se coiffant devant la glace", "artist": "Pablo Picasso", "year": "1933", "medium": "Aguafuerte sobre papel verjurado", "dimensions": "Plancha: 31,7 × 24,7 cm · Hoja: 44,5 × 34,5 cm", "style": "Suite Vollard", "edition": "", "description": "Perteneciente a la Suite Vollard, plancha G.208, catalogada por Georges Bloch (Tomo I, nº 141). Grabado ejecutado el 10 de abril de 1933, firmado a lápiz. Impresa por Lacourière y editada por Ambroise Vollard, París. La Suite Vollard es uno de los conjuntos gráficos más importantes del siglo XX.", "section": "iconic", "img_key": "Picasso"},
 {"id": "dominguez", "title": "La Maison", "artist": "Óscar Dominguez", "year": "1953-1954", "medium": "Óleo sobre lienzo", "dimensions": "33 × 41 cm", "style": "Cubista · Serie 'Vistas urbanas de una ciudad irreal'", "edition": "", "description": "Óleo perteneciente a la serie 'Vistas urbanas de una ciudad irreal'. Certificada por Ana Vázquez de Parga e inscrita en el Museo TEA (Tenerife Espacio de las Artes). Expuesta en Galería Juana Mordo (Madrid), Galerie Les Cadres (París), Galerie Roche (Bremen), y otras.", "section": "iconic", "img_key": "Óscar Dominguez"},
 {"id": "tapies-sin-titulo", "title": "Sin Título", "artist": "Antoni Tàpies", "year": "1976", "medium": "Pintura y lápiz sobre papel", "dimensions": "30,6 × 40,5 cm", "style": "Abstracto", "edition": "Obra única · Firmada", "description": "Pintura original sobre papel, firmada en el ángulo inferior derecho. Tàpies, considerado el pintor más importante de España tras Picasso, plasma aquí su lenguaje matérico con tajos expresionistas y empastes ásperos.", "section": "iconic", "img_key": "Tàpies - Pintura y lápiz sobre papel"},
 {"id": "tapies-ulleres", "title": "Ulleres i Pluja", "artist": "Antoni Tàpies", "year": "1979", "medium": "Pintura y lápiz sobre papel de estraza", "dimensions": "36 × 51 cm", "style": "Abstracto", "edition": "Obra única · Archivo Foto T-9239", "description": "Registrada en el archivo de obra completa del artista (Foto T-9239). Pintura sobre papel de estraza que evidencia la fascinación de Tàpies por los materiales humildes y su capacidad de transformarlos en vehículos de expresión poética.", "section": "iconic", "img_key": "Tàpies - Ulleres i Pluja"},
@@ -321,13 +333,28 @@ function saveAdmin() {
   try { localStorage.setItem('eleve-admin', JSON.stringify(adminState)); } catch(e) {}
 }
 
+let searchTerm = '';
+
+function filterGallery(term) {
+  searchTerm = term.toLowerCase().trim();
+  renderGallery();
+}
+
 function renderGallery() {
   const main = document.getElementById('main');
   main.innerHTML = '';
   
   ['iconic', 'graphic', 'available'].forEach(sectionKey => {
     const sec = SECTIONS[sectionKey];
-    const items = COLLECTION.filter(c => c.section === sectionKey && adminState[c.id]?.visible !== false);
+    const items = COLLECTION.filter(c => {
+      if (c.section !== sectionKey) return false;
+      if (adminState[c.id]?.visible === false) return false;
+      if (searchTerm) {
+        const haystack = [c.artist, c.title, c.medium, c.style, c.year, c.description].join(' ').toLowerCase();
+        if (!haystack.includes(searchTerm)) return false;
+      }
+      return true;
+    });
     if (items.length === 0) return;
     
     const div = document.createElement('div');
@@ -350,6 +377,7 @@ function renderGallery() {
             ['Técnica', item.medium],
             ['Dimensiones', item.dimensions],
             ['Estilo', item.style],
+            ['Edición', item.edition],
           ].filter(([,v]) => v && v !== '—');
           
           const globalIdx = COLLECTION.indexOf(item) + 1;
@@ -359,7 +387,6 @@ function renderGallery() {
           <div class="exhibit anim" onclick="openLightbox('${item.id}')">
             <div class="exhibit-img">
               <img src="${IMG[item.id] || ''}" alt="${item.title}" loading="lazy">
-              ${item.edition ? `<div class="exhibit-badge">${item.edition.split('·')[0].trim()}</div>` : ''}
             </div>
             <div class="exhibit-text">
               <div class="exhibit-num">${numStr}</div>
