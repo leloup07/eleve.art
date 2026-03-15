@@ -512,7 +512,7 @@ function renderGallery() {
             <div class="featured-card-body">
               <div class="featured-card-artist">${item.artist}</div>
               <div class="featured-card-title">${item.title}</div>
-              <div class="featured-card-medium">${item.medium}${item.year and item.year != '—' and ' · ' + item.year or ''}</div>
+              <div class="featured-card-medium">${item.medium}${item.year && item.year !== '—' ? ' · ' + item.year : ''}</div>
             </div>
           </div>`;
         }).join('')}
