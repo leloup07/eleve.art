@@ -73,6 +73,18 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .exhibit-field-label{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--ash);margin-bottom:2px;}
 .exhibit-field-value{font-size:13px;color:var(--charcoal);line-height:1.5;}
 .exhibit-desc{font-size:13.5px;line-height:1.9;color:var(--ash);font-style:italic;border-top:1px solid var(--parchment);padding-top:20px;max-width:480px;}
+/* FEATURED GRID */
+.featured-grid{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:24px;}
+.featured-card{background:var(--cream);border:1px solid var(--parchment);cursor:pointer;transition:all .4s ease;overflow:hidden;}
+.featured-card:hover{box-shadow:0 8px 32px rgba(0,0,0,.08);transform:translateY(-4px);}
+.featured-card-img{aspect-ratio:4/3;overflow:hidden;background:var(--ivory);display:flex;align-items:center;justify-content:center;padding:24px;}
+.featured-card-img img{max-width:100%;max-height:100%;object-fit:contain;transition:transform .6s ease;}
+.featured-card:hover .featured-card-img img{transform:scale(1.05);}
+.featured-card-body{padding:20px 24px 24px;}
+.featured-card-artist{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:6px;}
+.featured-card-title{font-family:"Cormorant Garamond",serif;font-size:20px;font-weight:300;font-style:italic;color:var(--ink);margin-bottom:8px;line-height:1.3;}
+.featured-card-medium{font-size:12px;color:var(--ash);line-height:1.5;}
+
 
 
 @media(max-width:900px){
@@ -172,7 +184,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   <div class="nav">
     <a href="#section-iconic" class="active">Icónicas</a>
     <a href="#section-graphic">Obra Gráfica</a>
-    <a href="#section-available">Disponibles</a>
   </div>
 </div>
 
@@ -433,12 +444,6 @@ const SECTIONS = {
     title: "Obra Gráfica",
     desc: "Grabados, aguafuertes y ediciones limitadas de artistas consagrados. Obra múltiple de alta calidad con certificados de autenticidad.",
     bg: "var(--ivory)"
-  },
-  available: {
-    label: "Sección III",
-    title: "Obras Disponibles",
-    desc: "Piezas accesibles de artistas reconocidos. Oportunidades de adquisición para coleccionistas.",
-    bg: "var(--cream)"
   }
 };
 
@@ -471,7 +476,7 @@ function renderGallery() {
   const main = document.getElementById('main');
   main.innerHTML = '';
   
-  ['iconic', 'graphic', 'available'].forEach(sectionKey => {
+  ['iconic', 'graphic'].forEach(sectionKey => {
     const sec = SECTIONS[sectionKey];
     const items = COLLECTION.filter(c => {
       if (c.section !== sectionKey) return false;
@@ -497,38 +502,17 @@ function renderGallery() {
         <div class="section-desc">${sec.desc}</div>
 
       </div>
-      <div class="exhibits">
-        ${items.map((item, idx) => {
-          const fields = [
-            ['Año', item.year],
-            ['Técnica', item.medium],
-            ['Dimensiones', item.dimensions],
-            ['Estilo', item.style],
-            ['Edición', item.edition],
-          ].filter(([,v]) => v && v !== '—');
-          
-          const globalIdx = COLLECTION.indexOf(item) + 1;
-          const numStr = String(globalIdx).padStart(2, '0');
-          
+      <div class="featured-grid">
+        ${items.map(item => {
           return `
-          <div class="exhibit anim" onclick="openLightbox('${item.id}')">
-            <div class="exhibit-img">
-              <img src="${IMG[item.id] || ''}" alt="${item.title}" loading="lazy">
+          <div class="featured-card anim" onclick="openLightbox('${item.id}')">
+            <div class="featured-card-img">
+              <img src="${IMG[item.id] || ''}" alt="${item.artist} - ${item.title}" loading="lazy">
             </div>
-            <div class="exhibit-text">
-              <div class="exhibit-num">${numStr}</div>
-              <div class="exhibit-artist">${item.artist}</div>
-              <div class="exhibit-title">${item.title}</div>
-              <div class="exhibit-fields">
-                ${fields.map(([label, value]) => `
-                  <div>
-                    <div class="exhibit-field-label">${label}</div>
-                    <div class="exhibit-field-value">${value}</div>
-                  </div>
-                `).join('')}
-              </div>
-              <div class="exhibit-desc">${item.description}</div>
-
+            <div class="featured-card-body">
+              <div class="featured-card-artist">${item.artist}</div>
+              <div class="featured-card-title">${item.title}</div>
+              <div class="featured-card-medium">${item.medium}${item.year and item.year != '—' and ' · ' + item.year or ''}</div>
             </div>
           </div>`;
         }).join('')}
@@ -596,7 +580,7 @@ function renderAdmin() {
   const container = document.getElementById('admin-content');
   container.innerHTML = '';
   
-  ['iconic', 'graphic', 'available'].forEach(sectionKey => {
+  ['iconic', 'graphic'].forEach(sectionKey => {
     const sec = SECTIONS[sectionKey];
     const items = COLLECTION.filter(c => c.section === sectionKey);
     
